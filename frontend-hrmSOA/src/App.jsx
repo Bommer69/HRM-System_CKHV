@@ -95,14 +95,7 @@ function AppShell() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/staff/customers/history"
-          element={
-            <ProtectedRoute>
-              <CustomerHistoryPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Lịch sử khách hàng: admin only, remove staff route */}
 
         {/*  admin departments */}
         <Route

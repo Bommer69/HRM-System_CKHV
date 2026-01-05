@@ -217,6 +217,87 @@ function CRMPage() {
     }
   };
 
+  const formatJson = (obj) => {
+    try {
+      return JSON.stringify(obj, null, 2);
+    } catch (e) {
+      return String(obj || "");
+    }
+  };
+
+  const actionStyle = (action) => {
+    const map = {
+      create: "bg-emerald-50 text-emerald-700 border-emerald-100",
+      update: "bg-amber-50 text-amber-700 border-amber-100",
+      delete: "bg-rose-50 text-rose-700 border-rose-100",
+      restore: "bg-blue-50 text-blue-700 border-blue-100",
+      import: "bg-indigo-50 text-indigo-700 border-indigo-100",
+    };
+    return map[action] || "bg-slate-50 text-slate-700 border-slate-100";
+  };
+
+  const actionIcon = (action) => {
+    const map = {
+      create: "➕",
+      update: "✏️",
+      delete: "🗑️",
+      restore: "♻️",
+      import: "⬇️",
+    };
+    return map[action] || "🛈";
+  };
+
+  const logDisplayFields = [
+    { key: "name", label: "Tên" },
+    { key: "cccd", label: "CCCD" },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "SĐT" },
+    { key: "address", label: "Địa chỉ" },
+    { key: "status", label: "Trạng thái" },
+    { key: "ownerName", label: "Người phụ trách" },
+    { key: "deleted", label: "Đã xóa" },
+    { key: "deletedByEmail", label: "Xóa bởi" },
+    { key: "deletedAt", label: "Thời gian xóa" },
+    { key: "createdAt", label: "Ngày tạo" },
+    { key: "updatedAt", label: "Ngày sửa" },
+  ];
+
+  const formatFieldValue = (key, val) => {
+    if (val === undefined || val === null) return "—";
+    if (key === "deleted") return val ? "Có" : "Không";
+    if (["createdAt", "updatedAt", "deletedAt"].includes(key)) {
+      if (!val) return "—";
+      const d = new Date(val);
+      return isNaN(d) ? String(val) : d.toLocaleString("vi-VN");
+    }
+    return String(val);
+  };
+
+  const renderLogCard = (obj = {}, title = "") => {
+    const hasData = obj && Object.keys(obj || {}).length > 0;
+    return (
+      <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-inner">
+        <div className="font-semibold text-slate-700 mb-2">{title}</div>
+        {!hasData && <div className="text-xs text-slate-400">Không có dữ liệu.</div>}
+        {hasData && (
+          <div className="grid sm:grid-cols-2 gap-2 text-xs text-slate-700">
+            {logDisplayFields.map((f) => (
+              <div
+                key={f.key}
+                className="bg-slate-50 border border-slate-100 rounded-md px-2 py-1 flex justify-between items-start gap-2"
+              >
+                <span className="text-slate-500">{f.label}</span>
+                <span className="font-semibold text-slate-800 text-right break-words">
+                  {formatFieldValue(f.key, obj[f.key])}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const openLogs = async (customer) => {
     const id = customer?.id || customer?._id;
     if (!id) return;
@@ -955,17 +1036,22 @@ function CRMPage() {
 
         {/* Log modal */}
         {logModal.open && (
-          <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 space-y-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 space-y-4 border border-slate-100">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">Nhật ký khách hàng</h3>
+                  <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    📜 Nhật ký khách hàng
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-600">
+                      Tối đa 50 log mới nhất
+                    </span>
+                  </h3>
                   <p className="text-sm text-slate-500">
-                    {logModal.customer?.name || "Khách hàng"} • Hiển thị tối đa 50 log gần nhất
+                    {logModal.customer?.name || "Khách hàng"}
                   </p>
                 </div>
                 <button
-                  className="text-slate-500 hover:text-slate-800"
+                  className="text-slate-500 hover:text-slate-800 text-lg"
                   onClick={() => setLogModal((p) => ({ ...p, open: false }))}
                 >
                   ✕
@@ -978,49 +1064,61 @@ function CRMPage() {
                 </div>
               )}
 
-              <div className="max-h-[460px] overflow-y-auto divide-y divide-slate-100">
+              <div className="max-h-[560px] overflow-y-auto space-y-4 pr-1">
                 {logModal.loading && <p className="text-sm text-slate-500 py-2">Đang tải...</p>}
                 {!logModal.loading && logModal.items.length === 0 && (
                   <p className="text-sm text-slate-500 py-2">Chưa có nhật ký.</p>
                 )}
-                {logModal.items.map((log) => (
-                  <div key={log.id} className="py-3 flex flex-col gap-1">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-slate-700">
-                        <span className="font-semibold text-indigo-600">{log.actorEmail || "N/A"}</span>
-                        <span className="text-slate-400">•</span>
-                        <span className="capitalize font-semibold">{log.action}</span>
+                {logModal.items.map((log, idx) => (
+                  <div
+                    key={log.id || idx}
+                    className="border border-slate-100 rounded-xl p-4 bg-gradient-to-br from-white to-slate-50 shadow-sm flex gap-3"
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-lg">
+                        {actionIcon(log.action)}
                       </div>
-                      <div className="text-xs text-slate-500">
-                        {log.createdAt
-                          ? new Date(log.createdAt).toLocaleString("vi-VN")
-                          : new Date(log.updatedAt || "").toLocaleString("vi-VN")}
-                      </div>
+                      <div className="flex-1 w-px bg-slate-200" />
                     </div>
-                    {log.meta && (
-                      <div className="text-xs text-slate-500">
-                        {log.meta.created !== undefined && (
-                          <span className="mr-2">Tạo: {log.meta.created}</span>
-                        )}
-                        {log.meta.skipped !== undefined && (
-                          <span className="mr-2">Bỏ qua: {log.meta.skipped}</span>
-                        )}
-                        {log.meta.errors !== undefined && <span>Lỗi: {log.meta.errors}</span>}
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-2 text-sm">
+                            <span className="font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded-lg">
+                              {log.actorEmail || "N/A"}
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs font-semibold border flex items-center gap-1 ${actionStyle(
+                                log.action
+                              )}`}
+                            >
+                              {actionIcon(log.action)} {log.action || "action"}
+                            </span>
+                          </div>
+                          {log.meta && (
+                            <div className="text-xs text-slate-600 flex flex-wrap gap-3">
+                              {log.meta.created !== undefined && <span>Tạo: {log.meta.created}</span>}
+                              {log.meta.skipped !== undefined && <span>Bỏ qua: {log.meta.skipped}</span>}
+                              {log.meta.errors !== undefined && <span>Lỗi: {log.meta.errors}</span>}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-500 whitespace-nowrap bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                          {log.createdAt
+                            ? new Date(log.createdAt).toLocaleString("vi-VN")
+                            : new Date(log.updatedAt || "").toLocaleString("vi-VN")}
+                        </div>
                       </div>
-                    )}
-                    <div className="text-xs text-slate-500 break-words">
-                      {log.before && (
-                        <span className="mr-2">
-                          Trước: <code className="bg-slate-50 px-1 rounded">{JSON.stringify(log.before)}</code>
-                        </span>
+
+                      {(log.before || log.after) && (
+                        <div className="grid md:grid-cols-2 gap-3 text-xs">
+                          {log.before && renderLogCard(log.before, "Trước")}
+                          {log.after && renderLogCard(log.after, "Sau")}
+                        </div>
                       )}
-                      {log.after && (
-                        <span>
-                          Sau: <code className="bg-slate-50 px-1 rounded">{JSON.stringify(log.after)}</code>
-                        </span>
-                      )}
+
                       {!log.before && !log.after && !log.meta && (
-                        <span className="text-slate-400">Không có chi tiết.</span>
+                        <div className="text-xs text-slate-400">Không có chi tiết.</div>
                       )}
                     </div>
                   </div>

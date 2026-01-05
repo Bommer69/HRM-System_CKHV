@@ -616,7 +616,6 @@ function CRMPage() {
             <input
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              placeholder="Tìm kiếm khách hàng theo tên, email, số điện thoại..."
               placeholder="Tìm kiếm theo tên, email, số điện thoại, địa chỉ..."
               className="w-full outline-none text-sm text-slate-700"
             />

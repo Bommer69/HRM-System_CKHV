@@ -40,7 +40,7 @@ jobs:
           TEST_MONGO_URI: mongodb://localhost:27017/hrm_identity_test
           JWT_SECRET: test_secret
 
-  frontend-tests:
+  frontend-tests-ui:
     name: Frontend UI Tests
     runs-on: ubuntu-latest
 

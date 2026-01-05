@@ -8,6 +8,7 @@
     "test:frontend": "node frontend/ui/run-tests.js",
     "test:admin": "node frontend/ui/admin-search-filter.test.js",
     "test:staff-customer": "node frontend/ui/staff-customer.test.js",
+    "test:staff-customer-export": "node frontend/ui/staff-customer-export.test.js",
     "test:browser": "node frontend/ui/test-browser-display.js",
     "test:visual": "node frontend/ui/test-visual.js",
     "test:all": "npm run test:backend && npm run test:frontend",
@@ -23,7 +24,8 @@
     "axios": "^1.13.2",
     "jest": "^29.7.0",
     "selenium-webdriver": "^4.15.0",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "xlsx": "^0.18.5"
   },
   "dependencies": {
     "chromedriver": "^143.0.3"

@@ -30,13 +30,12 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: test-hrmSOA/backend/identity-service/package-lock.json
 
-      - name: Install dependencies
+      - name: Install backend dependencies
         working-directory: test-hrmSOA/backend/identity-service
         run: npm ci
 
-      - name: Run tests
+      - name: Run backend tests
         working-directory: test-hrmSOA/backend/identity-service
         run: npm test
         env:
@@ -55,7 +54,6 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: frontend-hrmSOA/package-lock.json
 
       - name: Install frontend dependencies
         working-directory: frontend-hrmSOA
@@ -65,19 +63,8 @@ jobs:
         working-directory: test-hrmSOA
         run: npm ci
 
-      - name: Install Chrome
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-
-      - name: Install matching ChromeDriver
-        run: |
-          CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
-          DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}")
-          wget -q https://chromedriver.storage.googleapis.com/${DRIVER_VERSION}/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/local/bin/chromedriver
-          sudo chmod +x /usr/local/bin/chromedriver
+      # ⚠️ KHÔNG cài chromedriver
+      # ⚠️ Chrome đã có sẵn trong ubuntu-latest
 
       - name: Start frontend server
         working-directory: frontend-hrmSOA
